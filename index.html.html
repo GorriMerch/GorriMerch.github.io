@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Login 3D</title>
+  <style>
+    body {
+      background-color: #331a50; /* Dark purple background */
+      color: #f0f0f0; /* Light text color */
+      font-family: sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+
+    #login-form {
+      background-color: #503080; /* Slightly lighter purple */
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+    }
+
+    #login-form input,
+    #login-form button {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: none;
+      border-radius: 5px;
+      background-color: #663399; /* Darker purple */
+      color: #f0f0f0;
+    }
+
+    #login-form button {
+      cursor: pointer;
+    }
+
+    #panel {
+      background-color: #7040b0; /* Even lighter purple */
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+      opacity: 0;
+      transform: translateY(100px); /* Initially off-screen */
+      transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+      display: none;
+      position: fixed; /* Make it fixed to the viewport */
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    #panel.revealed {
+      opacity: 1;
+      transform: translateY(0);
+      display: block;
+    }
+
+    #clicker-box {
+      width: 100px;
+      height: 100px;
+      background-color: #8050c0; /* A shade of purple */
+      border-radius: 10px;
+      margin: 20px auto; /* Center horizontally */
+      cursor: pointer;
+      text-align: center;
+      line-height: 100px; /* Center the text vertically */
+      font-size: 24px;
+    }
+
+    #clicker-box:hover {
+      background-color: #9966cc; /* Slightly darker on hover */
+    }
+
+    #click-count {
+      margin-top: 10px;
+      font-size: 18px;
+    }
+
+    .click-box-container {
+      display: flex;
+      justify-content: space-around;
+      margin-top: 20px;
+    }
+
+    .click-box {
+      width: 50px;
+      height: 50px;
+      background-color: #8050c0;
+      border-radius: 5px;
+      cursor: pointer;
+      text-align: center;
+      line-height: 50px;
+      font-size: 14px;
+      margin: 0 10px;
+    }
+
+    .click-box:hover {
+      background-color: #9966cc;
+    }
+
+    .click-box-count {
+      margin-top: 5px;
+      font-size: 12px;
+    }
+
+    .upgrade-button {
+      width: 150px;
+      height: 40px;
+      background-color: #8050c0;
+      border-radius: 5px;
+      cursor: pointer;
+      text-align: center;
+      line-height: 40px;
+      font-size: 16px;
+      margin: 5px;
+      color: #f0f0f0;
+      border: none;
+    }
+
+    .upgrade-button:hover {
+      background-color: #9966cc;
+    }
+
+    .upgrade-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 20px;
+    }
+
+    .upgrade-info {
+      margin-top: 5px;
+      font-size: 14px;
+      color: #f0f0f0;
+    }
+
+    /* Styles for the upgrade items */
+    .upgrade-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 10px;
+      padding: 10px;
+      border-radius: 10px;
+      background-color: #663399;
+      width: 200px; /* Adjust width as needed */
+    }
+
+    .upgrade-item h3 {
+      margin-bottom: 5px;
+    }
+
+    /* Leaderboard Styles */
+    #leaderboard {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      background-color: #663399;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+      z-index: 100; /* Ensure it stays on top */
+    }
+
+    #leaderboard h2 {
+      margin-top: 0;
+      color: #f0f0f0;
+    }
+
+    #leaderboard-button {
+      background-color: #8050c0;
+      color: #f0f0f0;
+      border: none;
+      border-radius: 5px;
+      padding: 10px 20px;
+      cursor: pointer;
+      font-size: 16px;
+      margin-bottom: 10px;
+    }
+
+    #leaderboard-button:hover {
+      background-color: #9966cc;
+    }
+
+    #leaderboard-list {
+      list-style: none;
+      padding: 0;
+      color: #f0f0f0;
+    }
+
+    #leaderboard-list li {
+      margin-bottom: 5px;
+    }
+
+    /* Ruleta Styles */
+    #ruleta-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-top: 20px;
+    }
+
+    #ruleta {
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      background-color: #8050c0; /* Purple */
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+    }
+
+    #ruleta-arrow {
+      width: 0;
+      height: 0;
+      border-left: 10px solid transparent;
+      border-right: 10px solid transparent;
+      border-bottom: 15px solid #f0f0f0; /* White arrow */
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    #ruleta-options {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      font-size: 16px;
+      color: #f0f0f0;
+    }
+
+    #ruleta-options div {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transform: rotate(0deg);
+      transition: transform 0.5s ease-in-out;
+    }
+
+    #ruleta-options div:nth-child(1) {
+      transform: rotate(0deg);
+    }
+
+    #ruleta-options div:nth-child(2) {
+      transform: rotate(45deg);
+    }
+
+    #ruleta-options div:nth-child(3) {
+      transform: rotate(90deg);
+    }
+
+    #ruleta-options div:nth-child(4) {
+      transform: rotate(135deg);
+    }
+
+    #ruleta-options div:nth-child(5) {
+      transform: rotate(180deg);
+    }
+
+    #ruleta-options div:nth-child(6) {
+      transform: rotate(225deg);
+    }
+
+    #ruleta-options div:nth-child(7) {
+      transform: rotate(270deg);
+    }
+
+    #ruleta-options div:nth-child(8) {
+      transform: rotate(315deg);
+    }
+
+    #ruleta-options div.selected {
+      transform: rotate(0deg);
+    }
+
+    #ruleta-result {
+      margin-top: 10px;
+      font-size: 18px;
+      color: #f0f0f0;
+    }
+
+    /* Styles for the upgrade items */
+    .upgrade-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 10px;
+      padding: 10px;
+      border-radius: 10px;
+      background-color: #663399;
+      width: 200px; /* Adjust width as needed */
+    }
+
+    .upgrade-item h3 {
+      margin-bottom: 5px;
+    }
+
+    /* Ruleta Item Styles */
+    .ruleta-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      width: 100%;
+      height: 100%;
+      margin-bottom: 10px;
+    }
+
+    .ruleta-item h4 {
+      margin-bottom: 5px;
+      color: #f0f0f0;
+    }
+
+    .ruleta-item .upgrade-info {
+      margin-top: 5px;
+      font-size: 14px;
+      color: #f0f0f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="login-form">
+    <h1>Login</h1>
+    <input type="text" id="username" placeholder="Username">
+    <input type="password" id="password" placeholder="Password">
+    <button id="login-button">Login</button>
+  </div>
+
+  <div id="panel">
+    <h1>Welcome!</h1>
+    <p>This is your personalized content.</p>
+
+    <div id="clicker-box">Click Me!</div>
+    <div id="click-count">Clicks: 0</div>
+
+    <div class="click-box-container">
+      <div class="click-box">Click 1</div>
+      <div class="click-box">Click 2</div>
+      <div class="click-box">Click 3</div>
+    </div>
+    <div class="click-box-container">
+      <div class="click-box-count">Clicks: 0</div>
+      <div class="click-box-count">Clicks: 0</div>
+      <div class="click-box-count">Clicks: 0</div>
+    </div>
+
+    <div class="upgrade-container">
+      <div class="upgrade-item">
+        <h3>Upgrade 1</h3>
+        <button class="upgrade-button" id="upgrade1">Purchase</button>
+        <div class="upgrade-info">Cost: 10 clicks, Gives: 2 clicks per second</div>
+      </div>
+      <div class="upgrade-item">
+        <h3>Upgrade 2</h3>
+        <button class="upgrade-button" id="upgrade2">Purchase</button>
+        <div class="upgrade-info">Cost: 20 clicks, Gives: 5 clicks per second</div>
+      </div>
+      <div class="upgrade-item">
+        <h3>Upgrade 3</h3>
+        <button class="upgrade-button" id="upgrade3">Purchase</button>
+        <div class="upgrade-info">Cost: 30 clicks, Gives: 10 clicks per second</div>
+      </div>
+      <div class="upgrade-item">
+        <h3>Upgrade 4</h3>
+        <button class="upgrade-button" id="upgrade4">Purchase</button>
+        <div class="upgrade-info">Cost: 40 clicks, Gives: 20 clicks per second</div>
+      </div>
+      <div class="upgrade-item">
+        <h3>Upgrade 5</h3>
+        <button class="upgrade-button" id="upgrade5">Purchase</button>
+        <div class="upgrade-info">Cost: 50 clicks, Gives: 30 clicks per second</div>
+      </div>
+      <div class="upgrade-item">
+        <h3>Upgrade 6</h3>
+        <button class="upgrade-button" id="upgrade6">Purchase</button>
+        <div class="upgrade-info">Cost: 60 clicks, Gives: 40 clicks per second</div>
+      </div>
+      <div class="upgrade-item">
+        <h3>Upgrade 7</h3>
+        <button class="upgrade-button" id="upgrade7">Purchase</button>
+        <div class="upgrade-info">Cost: 70 clicks, Gives: 50 clicks per second</div>
+      </div>
+      <div class="upgrade-item">
+        <h3>Upgrade 8</h3>
+        <button class="upgrade-button" id="upgrade8">Purchase</button>
+        <div class="upgrade-info">Cost: 80 clicks, Gives: 60 clicks per second</div>
+      </div>
+      <div class="upgrade-item">
+        <h3>Upgrade 9</h3>
+        <button class="upgrade-button" id="upgrade9">Purchase</button>
+        <div class="upgrade-info">Cost: 90 clicks, Gives: 70 clicks per second</div>
+      </div>
+      <div class="upgrade-item">
+        <h3>Upgrade 10</h3>
+        <button class="upgrade-button" id="upgrade10">Purchase</button>
+        <div class="upgrade-info">Cost: 100 clicks, Gives: 80 clicks per second</div>
+      </div>
+    </div>
+
+    <div id="ruleta-container">
+      <div id="ruleta">
+        <div id="ruleta-arrow"></div>
+        <div id="ruleta-options">
+          <div class="ruleta-item">
+            <h4>Upgrade 1</h4>
+            <div class="upgrade-info">Cost: 10 clicks, Gives: 2 clicks per second</div>
+          </div>
+          <div class="ruleta-item">
+            <h4>Upgrade 2</h4>
+            <div class="upgrade-info">Cost: 20 clicks, Gives: 5 clicks per second</div>
+          </div>
+          <div class="ruleta-item">
+            <h4>Upgrade 3</h4>
+            <div class="upgrade-info">Cost: 30 clicks, Gives: 10 clicks per second</div>
+          </div>
+          <div class="ruleta-item">
+            <h4>Upgrade 4</h4>
+            <div class="upgrade-info">Cost: 40 clicks, Gives: 20 clicks per second</div>
+          </div>
+          <div class="ruleta-item">
+            <h4>Upgrade 5</h4>
+            <div class="upgrade-info">Cost: 50 clicks, Gives: 30 clicks per second</div>
+          </div>
+          <div class="ruleta-item">
+            <h4>Upgrade 6</h4>
+            <div class="upgrade-info">Cost: 60 clicks, Gives: 40 clicks per second</div>
+          </div>
+          <div class="ruleta-item">
+            <h4>Upgrade 7</h4>
+            <div class="upgrade-info">Cost: 70 clicks, Gives: 50 clicks per second</div>
+          </div>
+          <div class="ruleta-item">
+            <h4>Upgrade 8</h4>
+            <div class="upgrade-info">Cost: 80 clicks, Gives: 60 clicks per second</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="ruleta-result"></div>
+
+  </div>
+
+  <div id="leaderboard">
+    <h2>🏆 Top 10 Clickers</h2>
+    <button id="leaderboard-button">
+      Show Leaderboard <span role="img" aria-label="trophy">🏆</span>
+    </button>
+    <ul id="leaderboard-list">
+      <!-- Leaderboard content will be added here -->
+    </ul>
+  </div>
+
+  <script>
+    const loginButton = document.getElementById('login-button');
+    const usernameInput = document.getElementById('username');
+    const passwordInput = document.getElementById('password');
+    const panel = document.getElementById('panel');
+    const clickerBox = document.getElementById('clicker-box');
+    const clickCount = document.getElementById('click-count');
+    let clickCounter = 0;
+    let cps = 0; // Clicks per second
+
+    // Sample user data (store securely in a backend database)
+    const users = [
+      { username: 'user1', password: 'password1' },
+      { username: 'user2', password: 'password2' },
+      { username: 'user3', password: 'password3' },
+      { username: 'user4', password: 'password4' },
+      { username: 'user5', password: 'password5' },
+      { username: 'user6', password: 'password6' },
+      { username: 'user7', password: 'password7' },
+      { username: 'user8', password: 'password8' },
+      { username: 'user9', password: 'password9' },
+      { username: 'user10', password: 'password10' },
+      { username: 'user11', password: 'password11' },
+      { username: 'user12', password: 'password12' },
+      { username: 'user13', password: 'password13' },
+      { username: 'user14', password: 'password14' },
+      { username: 'user15', password: 'password15' },
+      { username: 'user16', password: 'password16' },
+      { username: 'user17', password: 'password17' },
+      { username: 'user18', password: 'password18' },
+      { username: 'user19', password: 'password19' },
+      { username: 'user20', password: 'password20' }
+    ];
+
+    loginButton.addEventListener('click', () => {
+      const username = usernameInput.value;
+      const password = passwordInput.value;
+
+      // Authentication logic (very basic, use a backend for real-world apps)
+      const user = users.find(u => u.username === username && u.password === password);
+      if (user) {
+        // Successful authentication
+        revealPanel();
+        // Load or initialize click count from local storage
+        clickCounter = loadClickCount(username) || 0;
+        clickCount.textContent = `Clicks: ${clickCounter}`;
+        // Add event listener to the clicker box
+        clickerBox.addEventListener('click', () => {
+          clickCounter++;
+          clickCount.textContent = `Clicks: ${clickCounter}`;
+          // Save the updated click count to local storage
+          saveClickCount(username, clickCounter);
+        });
+
+        // Add event listeners to the upgrade buttons
+        const upgradeButtons = document.querySelectorAll('.upgrade-button');
+        upgradeButtons.forEach((button, index) => {
+          button.addEventListener('click', () => {
+            const cost = 10 * (index + 1);
+            if (clickCounter >= cost) {
+              clickCounter -= cost;
+              clickCount.textContent = `Clicks: ${clickCounter}`;
+              cps += (index + 1) * 2;
+              startClicking();
+            } else {
+              alert("You don't have enough clicks for this upgrade!");
+            }
+          });
+        });
+
+        startClicking();
+
+        // Ruleta logic
+        const ruleta = document.getElementById('ruleta');
+        const ruletaOptions = document.querySelectorAll('#ruleta-options div');
+        const ruletaResult = document.getElementById('ruleta-result');
+
+        ruleta.addEventListener('click', () => {
+          const randomIndex = Math.floor(Math.random() * ruletaOptions.length);
+          const selectedOption = ruletaOptions[randomIndex];
+
+          // Reset all options
+          ruletaOptions.forEach(option => option.classList.remove('selected'));
+
+          // Set the selected option
+          selectedOption.classList.add('selected');
+
+          // Spin the wheel animation (you'll need to add this logic)
+          selectedOption.style.transform = `rotate(0deg)`; // Reset before spinning
+
+          // Display the result
+          ruletaResult.textContent = `Result: ${selectedOption.textContent}`;
+        });
+      } else {
+        // Incorrect credentials, handle the error
+        alert("Incorrect username or password");
+      }
+    });
+
+    function revealPanel() {
+      panel.classList.add('revealed');
+    }
+
+    // Function to save click count to local storage
+    function saveClickCount(username, count) {
+      localStorage.setItem(username, count);
+    }
+
+    // Function to load click count from local storage
+    function loadClickCount(username) {
+      return parseInt(localStorage.getItem(username));
+    }
+
+    // Function to simulate clicks per second
+    function startClicking() {
+      setInterval(() => {
+        clickCounter += cps;
+        clickCount.textContent = `Clicks: ${clickCounter}`;
+      }, 1000);
+    }
+
+    // Leaderboard JavaScript
+    const leaderboardButton = document.getElementById('leaderboard-button');
+    const leaderboardList = document.getElementById('leaderboard-list');
+
+    leaderboardButton.addEventListener('click', () => {
+      // Function to fetch top 10 users (replace with your actual API call)
+      fetchTop10Users().then(topUsers => {
+        leaderboardList.innerHTML = ''; // Clear previous content
+        topUsers.forEach((user, index) => {
+          const listItem = document.createElement('li');
+          listItem.textContent = `${index + 1}. ${user.username}: ${user.clickCount} clicks`;
+          leaderboardList.appendChild(listItem);
+        });
+      });
+    });
+
+    // Placeholder for fetching top users (you'll need to implement this)
+    function fetchTop10Users() {
+      // TODO: Replace this with your actual API call to get top users
+      return new Promise(resolve => {
+        setTimeout(() => {
+          resolve([
+            { username: 'user1', clickCount: 1000 },
+            { username: 'user2', clickCount: 800 },
+            { username: 'user3', clickCount: 750 },
+            // ... add more users ...
+          ]);
+        }, 1000); // Simulate a 1-second delay
+      });
+    }
+
+  </script>
+
+</body>
+</html>
